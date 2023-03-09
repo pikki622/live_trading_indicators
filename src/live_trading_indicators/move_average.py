@@ -33,11 +33,10 @@ class MA_Type(Enum):
 @njit(cache=True)
 def get_first_index_not_nan(values):
 
-    for i, value in enumerate(values):
-        if not np.isnan(values[i]):
-            return i
-
-    return len(values)
+    return next(
+        (i for i, value in enumerate(values) if not np.isnan(values[i])),
+        len(values),
+    )
 
 
 @njit(cache=True)

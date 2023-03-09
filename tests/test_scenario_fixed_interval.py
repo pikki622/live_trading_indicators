@@ -86,7 +86,7 @@ def test_fix_wo_time_many_symbols(config_default, test_source, a_symbol):
 
 
 def fortest_fix_with_time_chec_boounds(config, source, symbol, timeframe):
-    indicators = lti.Indicators(source, 20220901, 20220905, **config if config else {})
+    indicators = lti.Indicators(source, 20220901, 20220905, **config or {})
 
     ohlcv = indicators.OHLCV(symbol, timeframe)
     assert ohlcv.time[0] == np.datetime64('2022-09-01')

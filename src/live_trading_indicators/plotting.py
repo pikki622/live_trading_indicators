@@ -86,11 +86,7 @@ def indicator_data_plot(indicator_data):
 
     for i_axis, values in enumerate(values_groups):
 
-        if i_axis == 0:
-            ax = axis[i_axis]
-        else:
-            ax = axis[i_axis + 1]
-
+        ax = axis[i_axis] if i_axis == 0 else axis[i_axis + 1]
         for value_descript in values:
 
             value_parts = value_descript.split('=')
@@ -112,12 +108,11 @@ def indicator_data_plot(indicator_data):
 
                 values = np.ones(len(time), dtype=float) * value
 
+            elif chart_type == 'cloud':
+                assert len(value_parts_name) == 3
+                values = indicator_data.data[value_name], indicator_data.data[value_parts_name[2]]
             else:
-                if chart_type == 'cloud':
-                    assert len(value_parts_name) == 3
-                    values = indicator_data.data[value_name], indicator_data.data[value_parts_name[2]]
-                else:
-                    values = indicator_data.data[value_name]
+                values = indicator_data.data[value_name]
 
             plot_indicator(ax, timeframe, time, value_name, values, chart_type)
 
@@ -140,10 +135,12 @@ def indicator_data_plot(indicator_data):
             ax.text(0.99, 0.97, ax_label, transform=ax.transAxes, verticalalignment='top', horizontalalignment='right')
 
         handles, labels = ax.get_legend_handles_labels()
-        if len(handles) > 0:
-            if need_legend or len(handles) >= (2 if i_ax > 0 and len(axis) < 4 else 1):
-                ax.legend(loc='upper left', framealpha=0.5)
-                need_legend = True
+        if len(handles) > 0 and (
+            need_legend
+            or len(handles) >= (2 if i_ax > 0 and len(axis) < 4 else 1)
+        ):
+            ax.legend(loc='upper left', framealpha=0.5)
+            need_legend = True
 
     parameters = indicator_data.data.get('parameters')
     if parameters is not None:
@@ -171,11 +168,11 @@ def get_values_groups(indicator_data):
 
         no_paint = {'time'}
 
-        price_chart = set()
-        for key, value in indicator_data.data.items():
-            if type(value) == np.ndarray and key not in no_paint:
-                price_chart.add(key)
-
+        price_chart = {
+            key
+            for key, value in indicator_data.data.items()
+            if type(value) == np.ndarray and key not in no_paint
+        }
         return [price_chart], None
 
     ohlcv_data_dict = None

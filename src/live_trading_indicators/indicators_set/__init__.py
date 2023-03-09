@@ -93,8 +93,14 @@ class Indicators:
         self.time_begin = time_series[0]
         self.time_end = Timeframe.begin_of_tf(self.offline_timeframe, time_series[-1])
 
-        not_found_columns = {'time', 'open', 'high', 'low', 'close', 'volume'} - set(datasource.columns)
-        if not_found_columns:
+        if not_found_columns := {
+            'time',
+            'open',
+            'high',
+            'low',
+            'close',
+            'volume',
+        } - set(datasource.columns):
             raise LTIExceptionBadOfflineDataSource(
                 f'columns not found: {not_found_columns}'
             )
@@ -131,21 +137,21 @@ class Indicators:
         self.time_begin = cast_time(time_begin)
         self.time_end = cast_time(time_end, True)
 
-        if self.time_begin is not None:
-            if self.time_end is not None:
-
-                if self.time_begin > self.time_end:
-                    raise LTIExceptionTimeBeginLaterTimeEnd(self.time_begin, self.time_end)
-
-                self.indicators_mode = IndicatorsMode.fixed
-
-            else:
-                self.indicators_mode = IndicatorsMode.live
-        else:
+        if self.time_begin is None:
             if self.time_end is None:
                 self.indicators_mode = IndicatorsMode.flex
             else:
                 raise LTIExceptionBadTimeParameter(self.time_begin)
+
+        elif self.time_end is not None:
+
+            if self.time_begin > self.time_end:
+                raise LTIExceptionTimeBeginLaterTimeEnd(self.time_begin, self.time_end)
+
+            self.indicators_mode = IndicatorsMode.fixed
+
+        else:
+            self.indicators_mode = IndicatorsMode.live
 
     def init_log(self):
         logging.config.dictConfig(get_logging_config(self.config))
@@ -278,9 +284,14 @@ class Indicators:
             out_valid = indicator_module.get_indicator_out(self, symbols, timeframe, out_for_grow, **indicator_kwargs)
             self.put_out_to_cache(indicator_name, symbols, timeframe, indicator_kwargs, out_valid)
 
-        if self.indicators_mode != IndicatorsMode.live and self.indicators_mode != IndicatorsMode.offline:
-            if time_begin < out_valid.time[0] or out_valid.time[-1] + timeframe.value < time_end:
-                raise LTIExceptionOutOfThePeriod()
+        if self.indicators_mode not in [
+            IndicatorsMode.live,
+            IndicatorsMode.offline,
+        ] and (
+            time_begin < out_valid.time[0]
+            or out_valid.time[-1] + timeframe.value < time_end
+        ):
+            raise LTIExceptionOutOfThePeriod()
 
         return out_valid[time_begin: time_end + timeframe.value]
 
@@ -289,16 +300,29 @@ class Indicators:
 
         use_time_begin, use_time_end = self.check_call_time_intervals(time_begin, time_end, timeframe)
 
-        no_cached = hasattr(indicator_module, 'no_cached') and indicator_module.no_cached
-
-        if no_cached:
-            out = indicator_module.get_indicator_out(self, symbols, timeframe, use_time_begin, use_time_end,
-                                                     **indicator_kwargs)
-        else:
-            out = self.get_indicator_out_cached(indicator_name, indicator_module, symbols, timeframe, indicator_kwargs,
-                                                use_time_begin, use_time_end)
-
-        return out
+        return (
+            indicator_module.get_indicator_out(
+                self,
+                symbols,
+                timeframe,
+                use_time_begin,
+                use_time_end,
+                **indicator_kwargs,
+            )
+            if (
+                no_cached := hasattr(indicator_module, 'no_cached')
+                and indicator_module.no_cached
+            )
+            else self.get_indicator_out_cached(
+                indicator_name,
+                indicator_module,
+                symbols,
+                timeframe,
+                indicator_kwargs,
+                use_time_begin,
+                use_time_end,
+            )
+        )
 
     def reset(self, timeframe=None):
 
@@ -384,15 +408,15 @@ class Indicators:
                 'empty_bars_fraction': empty_bars_fraction,
                 'empty_bars_consecutive': empty_bars_consecutive
             })
-            if (empty_bars_fraction is not None and max_empty_bars_fraction >= 0 and empty_bars_fraction > max_empty_bars_fraction) \
+        if (empty_bars_fraction is not None and max_empty_bars_fraction >= 0 and empty_bars_fraction > max_empty_bars_fraction) \
                     or (empty_bars_consecutive is not None and max_empty_bars_consecutive >= 0 and empty_bars_consecutive > max_empty_bars_consecutive):
-                raise LTIExceptionTooManyEmptyBars(self.datasource_name,
-                                                   bar_data.symbol,
-                                                   bar_data.timeframe,
-                                                   bar_data.first_bar_time,
-                                                   bar_data.end_bar_time,
-                                                   empty_bars_fraction,
-                                                   empty_bars_consecutive)
+            raise LTIExceptionTooManyEmptyBars(self.datasource_name,
+                                               bar_data.symbol,
+                                               bar_data.timeframe,
+                                               bar_data.first_bar_time,
+                                               bar_data.end_bar_time,
+                                               empty_bars_fraction,
+                                               empty_bars_consecutive)
 
         return empty_bars_count, empty_bars_fraction, empty_bars_consecutive
 

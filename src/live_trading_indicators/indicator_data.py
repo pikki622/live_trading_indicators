@@ -6,7 +6,7 @@ import logging
 from .exceptions import *
 from .constants import *
 
-extra_modules = dict()
+extra_modules = {}
 
 
 def extra_module(module_name):
@@ -131,13 +131,10 @@ class TimeframeData:
 
     def copy(self):
 
-        new_data = {}
-        for key, value in self.data.items():
-            if type(value) == np.ndarray:
-                new_data[key] = value.copy()
-            else:
-                new_data[key] = value
-
+        new_data = {
+            key: value.copy() if type(value) == np.ndarray else value
+            for key, value in self.data.items()
+        }
         return self.__class__(new_data)
 
     def index_from_time(self, time):
@@ -209,9 +206,8 @@ class TimeframeData:
                     return False
                 if (other_value[~is_nan] != value[~is_nan]).any():
                     return False
-            else:
-                if key in verifiable_keys_not_series and other.data.get(key) != value:
-                    return False
+            elif key in verifiable_keys_not_series and other.data.get(key) != value:
+                return False
 
         return True
 
@@ -362,12 +358,7 @@ class OHLCV_data(TimeframeData):
             if not np.isnan(self.close[point]):
                 continue
 
-            if point == 0:
-                #price = self.open[ix_change[i + 1]]
-                price = np.nan
-            else:
-                price = self.close[point - 1]
-
+            price = np.nan if point == 0 else self.close[point - 1]
             point_end = ix_change[i + 1]
             self.open[point: point_end] = price
             self.high[point: point_end] = price

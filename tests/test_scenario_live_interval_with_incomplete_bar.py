@@ -54,7 +54,7 @@ def test_fix_live_with_incomplete_2(config_default, test_source, a_symbol):
     if remain_time_sec > 0:
         time.sleep(remain_time_sec)
     ohlcv = indicators.OHLCV(a_symbol, timeframe)
-    assert len(ohlcv.time) == n_bars or len(ohlcv.time) == n_bars + 1
+    assert len(ohlcv.time) in [n_bars, n_bars + 1]
 
     time.sleep(10)
     ohlcv = indicators.OHLCV(a_symbol, timeframe)

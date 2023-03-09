@@ -11,11 +11,7 @@ __version__ = '0.7.5'
 
 def config(actions=None, **kwargs):
 
-    if actions == 'set_default':
-        config = config_get_default()
-    else:
-        config = config_load()
-
+    config = config_get_default() if actions == 'set_default' else config_load()
     if len(kwargs):
 
         config.update(kwargs)

@@ -98,12 +98,14 @@ def add_last_point(pivot_types, pivots, high, low, delta, depth):
 
     n_bars = len(high)
 
-    i_last_point = 0
-    for i in range(1, n_bars + 1):
-        if pivot_types[n_bars - i] != 0:
-            i_last_point = n_bars - i
-            break
-
+    i_last_point = next(
+        (
+            n_bars - i
+            for i in range(1, n_bars + 1)
+            if pivot_types[n_bars - i] != 0
+        ),
+        0,
+    )
     last_pivot_type = pivot_types[i_last_point]
     if last_pivot_type == 0:
         return
@@ -139,9 +141,8 @@ def get_indicator_out(indicators, symbol, timeframe, time_begin, time_end, delta
         if pivot_types[i_valid] > 0:
             if (pivots[i_valid] - low[: i_valid].min()) / pivots[i_valid] < delta:
                 i_valid += 1
-        else:
-            if (high[: i_valid].max() - pivots[i_valid]) / pivots[i_valid] < delta:
-                i_valid += 1
+        elif (high[: i_valid].max() - pivots[i_valid]) / pivots[i_valid] < delta:
+            i_valid += 1
 
         pivots[: i_valid] = np.nan
         pivot_types[: i_valid] = 0

@@ -43,8 +43,7 @@ class Timeframe(IntEnum):
             except Exception as exception:
                 raise LTIExceptionBadTimeframeValue(value) from exception
 
-        if type(value) == str:
-            if hasattr(Timeframe, f't{value}'):
-                return Timeframe[f't{value}']
+        if type(value) == str and hasattr(Timeframe, f't{value}'):
+            return Timeframe[f't{value}']
 
         raise LTIExceptionBadTimeframeValue(value)

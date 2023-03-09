@@ -35,10 +35,9 @@ def calc_paraboic(highs, lows, start, maximum, increment):
                 sar = extreme
                 acceleration_factor = start
                 extreme = lows[i]
-            else:
-                if highs[i] > extreme:
-                    extreme = highs[i]
-                    acceleration_factor = min(acceleration_factor + increment, maximum)
+            elif highs[i] > extreme:
+                extreme = highs[i]
+                acceleration_factor = min(acceleration_factor + increment, maximum)
 
         else:
 
@@ -51,10 +50,9 @@ def calc_paraboic(highs, lows, start, maximum, increment):
                 sar = extreme
                 acceleration_factor = start
                 extreme = highs[i]
-            else:
-                if lows[i] < extreme:
-                    extreme = lows[i]
-                    acceleration_factor = min(acceleration_factor + increment, maximum)
+            elif lows[i] < extreme:
+                extreme = lows[i]
+                acceleration_factor = min(acceleration_factor + increment, maximum)
 
         sars[i] = sar
 
@@ -71,9 +69,9 @@ def get_indicator_out(indicators, symbol, timeframe, out_for_grow, start=0.02, m
 
     ohlcv = indicators.OHLCV.full_data(symbol, timeframe)
 
-    data_len = len(ohlcv)
     min_data_len = 3
     if len(ohlcv) < min_data_len:
+        data_len = len(ohlcv)
         raise LTIExceptionTooLittleData(f'data length {data_len} < {min_data_len}')
 
     parabolic_sar, signals = calc_paraboic(ohlcv.high, ohlcv.low, start, maximum, increment)

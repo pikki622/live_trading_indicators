@@ -63,7 +63,7 @@ class BinanceSource(OnlineSource):
 
         if len(symbol_parts) == 2:
             part = symbol_parts[0]
-            if part != 'um' and part != 'cm':
+            if part not in ['um', 'cm']:
                 raise LTIExceptionSymbolNotFound(symbol)
             return part, symbol_parts[-1]
 
@@ -191,13 +191,16 @@ class BinanceSource(OnlineSource):
 
             query_time_start = timeframe.begin_of_tf(time[-1][-1]) + timeframe.value
 
-        if len(time) == 0:
-            return None
-
-        return np.hstack(time), \
-               np.hstack(open),\
-               np.hstack(high),\
-               np.hstack(low),\
-               np.hstack(close),\
-               np.hstack(volume)
+        return (
+            (
+                np.hstack(time),
+                np.hstack(open),
+                np.hstack(high),
+                np.hstack(low),
+                np.hstack(close),
+                np.hstack(volume),
+            )
+            if time
+            else None
+        )
 

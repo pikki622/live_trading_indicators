@@ -26,10 +26,7 @@ def compare_with_nan(value1, value2, accuracy=1e-08):
 
 def get_descript(args):
 
-    if len(args) == 0:
-        return ''
-
-    return ','.join([str(par) for par in args])
+    return '' if len(args) == 0 else ','.join([str(par) for par in args])
 
 
 def get_ref_values(name, ohlcv, series, *args):

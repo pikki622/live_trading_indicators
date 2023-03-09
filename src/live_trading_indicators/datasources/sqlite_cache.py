@@ -31,7 +31,7 @@ class Sqlite3Cache:
 
         self.database_file = config['quotation_database']
         self.compression_type = CompressionType.cast(config['compression_type'])
-        self.compression_modules = dict()
+        self.compression_modules = {}
 
         database_folder = os.path.split(self.database_file)[0]
         if not os.path.isdir(database_folder):
@@ -85,7 +85,7 @@ class Sqlite3Cache:
             return {'version': '1'}
 
         config_table = cursor.execute("SELECT name, value FROM config")
-        return {name: value for name, value in config_table.fetchall()}
+        return dict(config_table.fetchall())
 
     def get_compression_module(self, compression_type):
 

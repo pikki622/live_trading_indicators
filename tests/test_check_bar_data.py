@@ -14,7 +14,7 @@ def test_check_bar_data(config_default, test_source, test_symbol, a_big_timefram
     empty_bars_count, empty_bars_fraction, empty_bars_consecutive = out.get_skips()
     assert empty_bars_fraction == 0 and empty_bars_consecutive == 0
 
-    out.close[0:6] = np.nan
+    out.close[:6] = np.nan
     empty_bars_count, empty_bars_fraction, empty_bars_consecutive = out.get_skips()
     assert empty_bars_fraction == 6 / n_bars and empty_bars_consecutive == 6
 

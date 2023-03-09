@@ -28,10 +28,12 @@ def all_symbols():
     symbols = []
     for part in ('um', 'cm', 'spot'):
         binance.download_exchange_info_part(part)
-        for symbol_name in binance.exchange_info_data[part]['symbols'].keys():
-            symbol = ('' if part == 'spot' else part + '/') + symbol_name
-            symbols.append(symbol)
-
+        symbols.extend(
+            ('' if part == 'spot' else part + '/') + symbol_name
+            for symbol_name in binance.exchange_info_data[part][
+                'symbols'
+            ].keys()
+        )
     return symbols
 
 
@@ -63,20 +65,30 @@ def test_ccxt_symbols():
 
 def test_timeframes():
 
-    timeframes = []
-    for tf_str in ('1m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d'):
-        timeframes.append(Timeframe.cast(tf_str))
-
-    return timeframes
+    return [
+        Timeframe.cast(tf_str)
+        for tf_str in (
+            '1m',
+            '5m',
+            '15m',
+            '30m',
+            '1h',
+            '2h',
+            '4h',
+            '6h',
+            '8h',
+            '12h',
+            '1d',
+        )
+    ]
 
 
 def test_big_timeframes():
 
-    timeframes = []
-    for tf_str in ('1h', '2h', '4h', '6h', '8h', '12h', '1d'):
-        timeframes.append(Timeframe.cast(tf_str))
-
-    return timeframes
+    return [
+        Timeframe.cast(tf_str)
+        for tf_str in ('1h', '2h', '4h', '6h', '8h', '12h', '1d')
+    ]
 
 
 def ohlcv_set(files, timeframe, symbol, date_start):
